@@ -10,12 +10,30 @@ export default function Playground() {
   const [logs, setLogs] = useState([]);
   const consoleEndRef = useRef(null);
   const [isCopied, setIsCopied] = useState(false);
+  const [isSharing, setIsSharing] = useState(false);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const sharedCode = params.get('code');
+    const sharedId = params.get('id');
     
-    if (sharedCode) {
+    if (sharedId) {
+      fetch(`https://bytebin.lucko.me/${sharedId}`)
+        .then(res => {
+          if (!res.ok) throw new Error('Code introuvable');
+          return res.text();
+        })
+        .then(decoded => {
+          setCode(decoded);
+          localStorage.setItem('playground-code', decoded);
+          window.history.replaceState({}, document.title, window.location.pathname);
+          setTimeout(() => {
+            const el = document.getElementById('playground');
+            if (el) el.scrollIntoView({ behavior: 'smooth' });
+          }, 500);
+        })
+        .catch(e => console.error("Erreur de récupération du code partagé", e));
+    } else if (sharedCode) {
       try {
         const decoded = decodeURIComponent(atob(sharedCode));
         setCode(decoded);
@@ -61,14 +79,36 @@ export default function Playground() {
   };
 
   const handleShare = async () => {
+    if (isSharing) return;
+    setIsSharing(true);
     try {
-      const encoded = encodeURIComponent(btoa(encodeURIComponent(code)));
-      const url = `${window.location.origin}${window.location.pathname}?code=${encoded}`;
+      const response = await fetch('https://bytebin.lucko.me/post', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'text/plain',
+          'Accept': 'application/json'
+        },
+        body: code
+      });
+      
+      if (!response.ok) throw new Error('Failed to create paste');
+      const data = await response.json();
+      
+      const url = `${window.location.origin}${window.location.pathname}?id=${data.key}`;
       await navigator.clipboard.writeText(url);
       setIsCopied(true);
       setTimeout(() => setIsCopied(false), 2000);
     } catch (err) {
-      console.error('Erreur lors de la copie du lien :', err);
+      console.error('Erreur via Bytebin, secours local activé :', err);
+      try {
+        const encoded = encodeURIComponent(btoa(encodeURIComponent(code)));
+        const url = `${window.location.origin}${window.location.pathname}?code=${encoded}`;
+        await navigator.clipboard.writeText(url);
+        setIsCopied(true);
+        setTimeout(() => setIsCopied(false), 2000);
+      } catch (fallbackErr) {}
+    } finally {
+      setIsSharing(false);
     }
   };
 
@@ -143,11 +183,12 @@ export default function Playground() {
           <div className="flex gap-2">
             <button 
               onClick={handleShare}
-              className="text-xs text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white px-3 py-1 rounded border border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/30 transition-colors focus-visible:outline-none flex items-center gap-1"
+              disabled={isSharing}
+              className={`text-xs text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white px-3 py-1 rounded border border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/30 transition-colors focus-visible:outline-none flex items-center gap-1 ${isSharing ? 'opacity-70 cursor-wait' : ''}`}
               title="Partager ce code"
             >
               {isCopied ? <Check className="w-3 h-3 text-green-500" /> : <Share2 className="w-3 h-3" />}
-              <span className="hidden sm:inline">{isCopied ? "Copié !" : "Partager"}</span>
+              <span className="hidden sm:inline">{isCopied ? "Copié !" : (isSharing ? "Génération..." : "Partager")}</span>
             </button>
             <button 
               onClick={effacerCode}
