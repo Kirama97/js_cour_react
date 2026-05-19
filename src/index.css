@@ -1,0 +1,27 @@
+@import "tailwindcss";
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  --color-js-yellow: #F7DF1E;
+  --color-js-dark: #1A1A2E;
+  --color-js-mid: #16213E;
+  --color-js-accent: #0F3460;
+  --color-js-blue: #E94560;
+  --font-display: "Space Grotesk", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+@layer components {
+  .tab-btn {
+    @apply px-5 py-3 text-sm font-medium transition-colors focus-visible:outline-none border-b-2 border-transparent text-slate-500 hover:text-slate-900 dark:text-gray-400 dark:hover:text-white;
+  }
+  .tab-btn.active {
+    @apply border-[#F7DF1E] text-slate-900 dark:text-white;
+  }
+}
