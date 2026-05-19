@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useTheme } from '../../hooks/useTheme.jsx';
-import { Moon, Sun } from 'lucide-react';
+import { Moon, Sun, HelpCircle } from 'lucide-react';
 import { useCourse } from '../../context/CourseContext';
 import SupportModal from '../ui/SupportModal';
 
@@ -13,7 +14,7 @@ export default function Header() {
     <>
       <header className="bg-white dark:bg-[#16213E] border-b border-slate-200 dark:border-[#F7DF1E]/20 sticky top-0 z-50 transition-colors">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
+          <Link to="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
             <div className="w-10 h-10 bg-[#F7DF1E] rounded-lg flex items-center justify-center shadow-sm">
               <span className="text-[#1A1A2E] font-bold text-lg font-mono">JS</span>
             </div>
@@ -21,7 +22,7 @@ export default function Header() {
               <h1 className="font-bold text-lg leading-tight text-slate-900 dark:text-white">Cours JavaScript</h1>
               <p className="text-xs text-slate-500 dark:text-gray-400">Série d'exercices progressifs</p>
             </div>
-          </div>
+          </Link>
 
           <nav className="hidden lg:flex items-center gap-6" aria-label="Statistiques du cours">
             <div className="text-center">
@@ -39,6 +40,14 @@ export default function Header() {
           </nav>
 
           <div className="flex items-center gap-4">
+            <Link 
+              to="/quiz" 
+              className="flex items-center gap-2 text-sm font-bold text-slate-600 dark:text-gray-300 hover:text-slate-900 dark:hover:text-[#F7DF1E] transition-colors"
+            >
+              <HelpCircle className="w-5 h-5" />
+              <span className="hidden md:inline">Quiz</span>
+            </Link>
+
             <button 
               onClick={toggleTheme} 
               className="p-2 rounded-lg bg-gray-100 dark:bg-[#0F3460] text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-[#16213E] transition-colors focus-visible:outline-none" 

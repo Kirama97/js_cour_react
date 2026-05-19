@@ -1,4 +1,5 @@
 import React from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Header from './components/layout/Header';
 import Footer from './components/layout/Footer';
 import WelcomeModal from './components/ui/WelcomeModal';
@@ -6,17 +7,17 @@ import ModuleGrid from './components/course/ModuleGrid';
 import ModuleDetail from './components/course/ModuleDetail';
 import Playground from './components/playground/Playground';
 import ProgressBar from './components/course/ProgressBar';
+import Quiz from './components/quiz/Quiz';
 import { CourseProvider } from './context/CourseContext';
 import { ThemeProvider } from './hooks/useTheme.jsx';
 import { Play, Code } from 'lucide-react';
 
-function AppContent() {
+function Home() {
   return (
-    <div className="bg-slate-50 text-slate-900 dark:bg-[#1A1A2E] dark:text-white min-h-screen transition-colors duration-300 font-display">
+    <>
       <WelcomeModal />
-      <Header />
-      
-      <main className="max-w-7xl mx-auto px-6 py-12">
+
+      <div className="w-full">
         {/* HERO */}
         <section
           className="bg-white dark:bg-gradient-to-r dark:from-[#16213E] dark:to-[#0F3460] rounded-2xl p-8 mb-12 border border-slate-200 dark:border-[#F7DF1E]/10 relative overflow-hidden shadow-sm transition-colors"
@@ -53,7 +54,30 @@ function AppContent() {
         <ModuleDetail />
         <Playground />
         <ProgressBar />
-      </main>
+      </div>
+    </>
+  );
+}
+
+function AppContent() {
+  return (
+    <div className="bg-slate-50 text-slate-900 dark:bg-[#1A1A2E] dark:text-white min-h-screen transition-colors duration-300 font-display flex flex-col">
+      <Header />
+      
+      <div className="flex-grow flex flex-col">
+        <Routes>
+          <Route path="/" element={
+            <main className="max-w-7xl mx-auto px-6 py-12 w-full">
+              <Home />
+            </main>
+          } />
+          <Route path="/quiz" element={
+            <main className="max-w-7xl mx-auto px-6 py-12 w-full flex-grow flex flex-col">
+              <Quiz />
+            </main>
+          } />
+        </Routes>
+      </div>
 
       <Footer />
     </div>
@@ -62,10 +86,12 @@ function AppContent() {
 
 export default function App() {
   return (
-    <ThemeProvider>
-      <CourseProvider>
-        <AppContent />
-      </CourseProvider>
-    </ThemeProvider>
+    <BrowserRouter>
+      <ThemeProvider>
+        <CourseProvider>
+          <AppContent />
+        </CourseProvider>
+      </ThemeProvider>
+    </BrowserRouter>
   );
 }
