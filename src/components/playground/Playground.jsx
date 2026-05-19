@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Play, Trash2 } from 'lucide-react';
+import { Play, Trash2, Share2, Check } from 'lucide-react';
 import { snippets } from '../../data/modules';
 import Editor from '@monaco-editor/react';
 
@@ -9,11 +9,30 @@ export default function Playground() {
   const [code, setCode] = useState('');
   const [logs, setLogs] = useState([]);
   const consoleEndRef = useRef(null);
+  const [isCopied, setIsCopied] = useState(false);
 
   useEffect(() => {
-    const savedCode = localStorage.getItem('playground-code');
-    if (savedCode) {
-      setCode(savedCode);
+    const params = new URLSearchParams(window.location.search);
+    const sharedCode = params.get('code');
+    
+    if (sharedCode) {
+      try {
+        const decoded = decodeURIComponent(atob(sharedCode));
+        setCode(decoded);
+        localStorage.setItem('playground-code', decoded);
+        window.history.replaceState({}, document.title, window.location.pathname);
+        setTimeout(() => {
+          const el = document.getElementById('playground');
+          if (el) el.scrollIntoView({ behavior: 'smooth' });
+        }, 500);
+      } catch (e) {
+        console.error("Erreur de décodage du code partagé", e);
+      }
+    } else {
+      const savedCode = localStorage.getItem('playground-code');
+      if (savedCode) {
+        setCode(savedCode);
+      }
     }
 
     const handleCodeLoaded = () => {
@@ -39,6 +58,18 @@ export default function Playground() {
     setCode('');
     localStorage.removeItem('playground-code');
     effacerConsole();
+  };
+
+  const handleShare = async () => {
+    try {
+      const encoded = encodeURIComponent(btoa(encodeURIComponent(code)));
+      const url = `${window.location.origin}${window.location.pathname}?code=${encoded}`;
+      await navigator.clipboard.writeText(url);
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
+    } catch (err) {
+      console.error('Erreur lors de la copie du lien :', err);
+    }
   };
 
   const effacerConsole = () => {
@@ -110,6 +141,14 @@ export default function Playground() {
             <span className="ml-2 text-[10px] text-slate-500 dark:text-gray-500 italic hidden sm:inline transition-colors">(Sauvegarde automatique)</span>
           </div>
           <div className="flex gap-2">
+            <button 
+              onClick={handleShare}
+              className="text-xs text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white px-3 py-1 rounded border border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/30 transition-colors focus-visible:outline-none flex items-center gap-1"
+              title="Partager ce code"
+            >
+              {isCopied ? <Check className="w-3 h-3 text-green-500" /> : <Share2 className="w-3 h-3" />}
+              <span className="hidden sm:inline">{isCopied ? "Copié !" : "Partager"}</span>
+            </button>
             <button 
               onClick={effacerCode}
               className="text-xs text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white px-3 py-1 rounded border border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/30 transition-colors focus-visible:outline-none"
