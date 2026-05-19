@@ -145,13 +145,13 @@ export default function Quiz() {
             ></div>
           </div>
 
-          <div className="bg-white dark:bg-[#16213E] rounded-3xl p-6 md:p-10 shadow-xl border border-slate-200 dark:border-white/10 backdrop-blur-xl relative overflow-hidden transition-colors">
+          <div className="bg-white dark:bg-[#16213E] rounded-3xl p-5 md:p-10 shadow-xl border border-slate-200 dark:border-white/10 backdrop-blur-xl relative overflow-hidden transition-colors">
             
-            <h2 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white mb-10 leading-tight">
+            <h2 className="text-xl md:text-3xl font-bold text-slate-900 dark:text-white mb-6 md:mb-10 leading-tight">
               {questions[currentQIndex].question}
             </h2>
 
-            <div className="flex flex-col gap-4 mb-8">
+            <div className="flex flex-col gap-3 md:gap-4 mb-6 md:mb-8">
               {questions[currentQIndex].options.map((option, index) => {
                 let buttonStyle = "border-slate-200 dark:border-white/10 hover:border-[#F7DF1E] hover:bg-[#F7DF1E]/5 dark:hover:bg-[#F7DF1E]/10";
                 let icon = null;
@@ -159,10 +159,10 @@ export default function Quiz() {
                 if (isAnswered) {
                   if (option.isCorrect) {
                     buttonStyle = "border-green-500 bg-green-50 dark:bg-green-500/10 text-green-700 dark:text-green-400 scale-[1.02] shadow-lg shadow-green-500/10";
-                    icon = <CheckCircle2 className="w-6 h-6 text-green-500" />;
+                    icon = <CheckCircle2 className="w-5 h-5 md:w-6 md:h-6 text-green-500" />;
                   } else if (index === selectedAnswer) {
                     buttonStyle = "border-red-500 bg-red-50 dark:bg-red-500/10 text-red-700 dark:text-red-400 scale-[0.98]";
-                    icon = <XCircle className="w-6 h-6 text-red-500" />;
+                    icon = <XCircle className="w-5 h-5 md:w-6 md:h-6 text-red-500" />;
                   } else {
                     buttonStyle = "border-slate-200 dark:border-white/10 opacity-40 scale-[0.98]";
                   }
@@ -173,9 +173,9 @@ export default function Quiz() {
                     key={index}
                     onClick={() => handleAnswerClick(index)}
                     disabled={isAnswered}
-                    className={`group flex items-center justify-between w-full text-left p-5 rounded-2xl border-2 transition-all duration-300 focus-visible:outline-none ${buttonStyle}`}
+                    className={`group flex items-center justify-between w-full text-left p-4 md:p-5 rounded-xl md:rounded-2xl border-2 transition-all duration-300 focus-visible:outline-none ${buttonStyle}`}
                   >
-                    <span className="text-lg font-medium text-slate-700 dark:text-gray-200">{option.text}</span>
+                    <span className="text-base md:text-lg font-medium text-slate-700 dark:text-gray-200">{option.text}</span>
                     {icon && <div className="animate-in zoom-in">{icon}</div>}
                   </button>
                 );
