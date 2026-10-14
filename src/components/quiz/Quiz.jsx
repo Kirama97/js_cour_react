@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { quizData } from '../../data/quiz';
 import QuizIntro from './QuizIntro';
 import QuizPlaying from './QuizPlaying';
@@ -33,35 +33,44 @@ export default function Quiz() {
     setGameState('playing');
   };
 
-  useEffect(() => {
-    if (gameState === 'playing' && !isAnswered) {
-      if (timeLeft > 0) {
-        const timerId = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
-        return () => clearTimeout(timerId);
-      } else {
-        // Temps écoulé
-        handleAnswerClick(-1);
-      }
-    }
-  }, [timeLeft, gameState, isAnswered]);
-
-  useEffect(() => {
-    if (gameState === 'results' && score > 5) {
-      const audio = new Audio('/applaudissement.mp3');
-      audio.play().catch(err => console.log("Audio playback failed:", err));
-    }
-  }, [gameState, score]);
-
-  const handleAnswerClick = (index) => {
+  const handleAnswerClick = useCallback((index) => {
     if (isAnswered) return;
     
     setSelectedAnswer(index);
     setIsAnswered(true);
 
-    if (index !== -1 && questions[currentQIndex].options[index].isCorrect) {
+    if (index !== -1 && questions[currentQIndex]?.options[index]?.isCorrect) {
       setScore(s => s + 1);
     }
-  };
+  }, [isAnswered, questions, currentQIndex]);
+
+  useEffect(() => {
+    if (gameState === 'playing' && !isAnswered) {
+      if (timeLeft <= 0) {
+        const timeout = setTimeout(() => {
+          handleAnswerClick(-1);
+        }, 0);
+        return () => clearTimeout(timeout);
+      }
+      const timerId = setTimeout(() => {
+        setTimeLeft(t => Math.max(0, t - 1));
+      }, 1000);
+      return () => clearTimeout(timerId);
+    }
+  }, [timeLeft, gameState, isAnswered, handleAnswerClick]);
+
+  useEffect(() => {
+    if (gameState === 'results' && score > 5) {
+      try {
+        const audio = new Audio('/applaudissement.mp3');
+        audio.play().catch(err => {
+          void err;
+        });
+      } catch (err) {
+        void err;
+      }
+    }
+  }, [gameState, score]);
 
   const handleNextQuestion = () => {
     const nextIndex = currentQIndex + 1;
@@ -83,7 +92,7 @@ export default function Quiz() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto w-full">
+    <div className="max-w-4xl mx-auto w-full py-4">
       {gameState === 'intro' && (
         <QuizIntro onStart={startQuiz} />
       )}

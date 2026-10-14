@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState } from 'react';
 
 const ThemeContext = createContext();
 
@@ -7,7 +7,8 @@ function getInitialTheme() {
     const saved = localStorage.getItem('color-theme');
     if (saved === 'dark' || saved === 'light') return saved;
     return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-  } catch {
+  } catch (err) {
+    void err;
     return 'light';
   }
 }
@@ -20,7 +21,9 @@ function applyTheme(theme) {
   }
   try {
     localStorage.setItem('color-theme', theme);
-  } catch {}
+  } catch (err) {
+    void err;
+  }
 }
 
 export function ThemeProvider({ children }) {

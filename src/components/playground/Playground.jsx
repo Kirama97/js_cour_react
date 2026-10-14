@@ -1,20 +1,92 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Play, Trash2, Share2, Check } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Play, Trash2, Share2, Check, Terminal } from 'lucide-react';
 import { snippets } from '../../data/modules';
 import Editor from '@monaco-editor/react';
 
+function getInitialPlaygroundCode() {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const sharedCode = params.get('code');
+    if (sharedCode) {
+      return decodeURIComponent(atob(sharedCode));
+    }
+    const saved = localStorage.getItem('playground-code');
+    if (saved) return saved;
+  } catch (err) {
+    void err;
+  }
+  return `// Playground JavaScript
+// Écrivez votre code et cliquez sur "Exécuter".
 
+const message = "Bienvenue dans le Playground !";
+console.log(message);
+`;
+}
+
+function executeCodeSafely(code) {
+  const capturedLogs = [];
+  const origLog = console.log;
+  const origError = console.error;
+  const origWarn = console.warn;
+
+  const formatArg = (v) => {
+    if (v === null) return 'null';
+    if (v === undefined) return 'undefined';
+    if (typeof v === 'symbol' || typeof v === 'function') return v.toString();
+    if (v instanceof Error) return v.stack || v.message;
+    if (Array.isArray(v)) {
+      try {
+        return JSON.stringify(v);
+      } catch {
+        return '[Array]';
+      }
+    }
+    if (typeof v === 'object') {
+      try {
+        return JSON.stringify(v, null, 2);
+      } catch {
+        return '[Object]';
+      }
+    }
+    return String(v);
+  };
+
+  console.log = (...args) => {
+    capturedLogs.push({ type: 'log', msg: args.map(formatArg).join(' ') });
+    origLog(...args);
+  };
+  console.error = (...args) => {
+    capturedLogs.push({ type: 'error', msg: args.map(formatArg).join(' ') });
+    origError(...args);
+  };
+  console.warn = (...args) => {
+    capturedLogs.push({ type: 'warn', msg: args.map(formatArg).join(' ') });
+    origWarn(...args);
+  };
+
+  try {
+    const runner = new Function(code);
+    runner();
+  } catch (e) {
+    capturedLogs.push({ type: 'error', msg: '❌ ' + (e?.message || String(e)) });
+  } finally {
+    console.log = origLog;
+    console.error = origError;
+    console.warn = origWarn;
+  }
+
+  return capturedLogs;
+}
 
 export default function Playground() {
-  const [code, setCode] = useState('');
+  const [code, setCode] = useState(getInitialPlaygroundCode);
   const [logs, setLogs] = useState([]);
-  const consoleEndRef = useRef(null);
+  const consoleBoxRef = useRef(null);
   const [isCopied, setIsCopied] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const sharedCode = params.get('code');
     const sharedId = params.get('id');
     
     if (sharedId) {
@@ -25,36 +97,22 @@ export default function Playground() {
         })
         .then(decoded => {
           setCode(decoded);
-          localStorage.setItem('playground-code', decoded);
-          window.history.replaceState({}, document.title, window.location.pathname);
-          setTimeout(() => {
-            const el = document.getElementById('playground');
-            if (el) el.scrollIntoView({ behavior: 'smooth' });
-          }, 500);
+          try {
+            localStorage.setItem('playground-code', decoded);
+            window.history.replaceState({}, document.title, window.location.pathname);
+          } catch (err) {
+            void err;
+          }
         })
         .catch(e => console.error("Erreur de récupération du code partagé", e));
-    } else if (sharedCode) {
-      try {
-        const decoded = decodeURIComponent(atob(sharedCode));
-        setCode(decoded);
-        localStorage.setItem('playground-code', decoded);
-        window.history.replaceState({}, document.title, window.location.pathname);
-        setTimeout(() => {
-          const el = document.getElementById('playground');
-          if (el) el.scrollIntoView({ behavior: 'smooth' });
-        }, 500);
-      } catch (e) {
-        console.error("Erreur de décodage du code partagé", e);
-      }
-    } else {
-      const savedCode = localStorage.getItem('playground-code');
-      if (savedCode) {
-        setCode(savedCode);
-      }
     }
 
     const handleCodeLoaded = () => {
-      setCode(localStorage.getItem('playground-code') || '');
+      try {
+        setCode(localStorage.getItem('playground-code') || '');
+      } catch (err) {
+        void err;
+      }
     };
 
     window.addEventListener('playgroundCodeLoaded', handleCodeLoaded);
@@ -62,20 +120,29 @@ export default function Playground() {
   }, []);
 
   useEffect(() => {
-    if (consoleEndRef.current) {
-      consoleEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    if (consoleBoxRef.current && logs.length > 0) {
+      consoleBoxRef.current.scrollTop = consoleBoxRef.current.scrollHeight;
     }
   }, [logs]);
 
   const handleEditorChange = (value) => {
-    setCode(value || '');
-    localStorage.setItem('playground-code', value || '');
+    const val = value || '';
+    setCode(val);
+    try {
+      localStorage.setItem('playground-code', val);
+    } catch (err) {
+      void err;
+    }
   };
 
   const effacerCode = () => {
     setCode('');
-    localStorage.removeItem('playground-code');
-    effacerConsole();
+    try {
+      localStorage.removeItem('playground-code');
+    } catch (err) {
+      void err;
+    }
+    setLogs([]);
   };
 
   const handleShare = async () => {
@@ -98,173 +165,143 @@ export default function Playground() {
       await navigator.clipboard.writeText(url);
       setIsCopied(true);
       setTimeout(() => setIsCopied(false), 2000);
-    } catch (err) {
-      console.error('Erreur via Bytebin, secours local activé :', err);
+    } catch {
       try {
         const encoded = encodeURIComponent(btoa(encodeURIComponent(code)));
         const url = `${window.location.origin}${window.location.pathname}?code=${encoded}`;
         await navigator.clipboard.writeText(url);
         setIsCopied(true);
         setTimeout(() => setIsCopied(false), 2000);
-      } catch (fallbackErr) {}
+      } catch (err) {
+        void err;
+      }
     } finally {
       setIsSharing(false);
     }
-  };
-
-  const effacerConsole = () => {
-    setLogs([]);
   };
 
   const chargerSnippet = (nom) => {
     const snippetCode = snippets[nom];
     if (snippetCode) {
       setCode(snippetCode);
-      localStorage.setItem('playground-code', snippetCode);
+      try {
+        localStorage.setItem('playground-code', snippetCode);
+      } catch (err) {
+        void err;
+      }
     }
-  };
-
-  const formatVal = (v) => {
-    if (v === null) return 'null';
-    if (v === undefined) return 'undefined';
-    if (Array.isArray(v)) return JSON.stringify(v);
-    if (typeof v === 'object') return JSON.stringify(v, null, 2);
-    return String(v);
   };
 
   const executerCode = () => {
-    setLogs([]);
-    const newLogs = [];
-    const origLog = console.log;
-    const origError = console.error;
-
-    console.log = (...args) => {
-      newLogs.push({ type: 'log', msg: args.map(formatVal).join(' ') });
-      origLog(...args);
-    };
-    console.error = (...args) => {
-      newLogs.push({ type: 'error', msg: args.map(formatVal).join(' ') });
-      origError(...args);
-    };
-
-    try {
-      // eslint-disable-next-line no-eval
-      eval(code);
-      setTimeout(() => {
-        setLogs([...newLogs]);
-        console.log = origLog;
-        console.error = origError;
-      }, 50);
-    } catch (e) {
-      console.log = origLog;
-      console.error = origError;
-      newLogs.push({ type: 'error', msg: '❌ ' + e.message });
-      setLogs([...newLogs]);
-    }
+    const newLogs = executeCodeSafely(code);
+    setLogs(newLogs);
   };
 
   return (
-    <section id="playground" className="mb-16" aria-labelledby="playground-title">
-      <h2 id="playground-title" className="text-2xl font-bold mb-6 flex items-center gap-3 text-slate-900 dark:text-white transition-colors">
-        <span className="w-1 h-7 bg-[#F7DF1E] rounded-full inline-block" aria-hidden="true"></span>
-        Playground — Testez votre code
+    <section id="playground" className="mb-16 scroll-mt-20" aria-labelledby="playground-title">
+      <h2 id="playground-title" className="text-xl sm:text-2xl font-bold mb-6 flex items-center gap-2.5 text-slate-900 dark:text-white font-display transition-colors tracking-tight">
+        <span className="w-1.5 h-6 bg-[#F7DF1E] rounded-full inline-block" aria-hidden="true"></span>
+        Playground libre
       </h2>
 
-      <div className="bg-white dark:bg-[#16213E] rounded-2xl border border-slate-200 dark:border-white/10 overflow-hidden shadow-lg transition-colors">
+      <div className="bg-[#0d1117] rounded-2xl border border-slate-300 dark:border-white/15 overflow-hidden shadow-lg">
         {/* Editor header */}
-        <div className="bg-slate-50 dark:bg-[#0d1117] px-4 py-3 flex items-center justify-between border-b border-slate-200 dark:border-white/10">
+        <div className="bg-[#161b22] px-4 py-2.5 flex items-center justify-between border-b border-white/10 text-slate-400">
           <div className="flex items-center gap-2">
-            <span className="w-3 h-3 rounded-full bg-red-500" aria-hidden="true"></span>
-            <span className="w-3 h-3 rounded-full bg-yellow-400" aria-hidden="true"></span>
-            <span className="w-3 h-3 rounded-full bg-green-500" aria-hidden="true"></span>
-            <span className="ml-3 text-xs text-slate-400 dark:text-gray-400 font-mono transition-colors">script.js</span>
-            <span className="ml-2 text-[10px] text-slate-500 dark:text-gray-500 italic hidden sm:inline transition-colors">(Sauvegarde automatique)</span>
+            <span className="w-2.5 h-2.5 rounded-full bg-[#F7DF1E]"></span>
+            <span className="text-xs font-mono text-[#F7DF1E] font-medium">script.js</span>
+            <span className="text-[10px] text-slate-400 hidden sm:inline">(sauvegarde auto)</span>
           </div>
-          <div className="flex gap-2">
+
+          <div className="flex items-center gap-2">
             <button 
               onClick={handleShare}
               disabled={isSharing}
-              className={`text-xs text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white px-3 py-1 rounded border border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/30 transition-colors focus-visible:outline-none flex items-center gap-1 ${isSharing ? 'opacity-70 cursor-wait' : ''}`}
+              className="text-xs text-slate-300 hover:text-white px-2.5 py-1.5 rounded-lg border border-white/10 hover:border-white/20 hover:bg-white/5 transition-colors flex items-center gap-1.5"
               title="Partager ce code"
             >
-              {isCopied ? <Check className="w-3 h-3 text-green-500" /> : <Share2 className="w-3 h-3" />}
-              <span className="hidden sm:inline">{isCopied ? "Copié !" : (isSharing ? "Génération..." : "Partager")}</span>
+              {isCopied ? <Check className="w-3 h-3 text-emerald-400" /> : <Share2 className="w-3 h-3 text-slate-300" />}
+              <span className="hidden sm:inline">{isCopied ? "Lien copié" : "Partager"}</span>
             </button>
+
             <button 
               onClick={effacerCode}
-              className="text-xs text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white px-3 py-1 rounded border border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/30 transition-colors focus-visible:outline-none"
+              className="text-xs text-slate-300 hover:text-white px-2.5 py-1.5 rounded-lg border border-white/10 hover:border-white/20 hover:bg-white/5 transition-colors"
             >
               Effacer
             </button>
+
             <button 
               onClick={executerCode}
-              className="text-xs bg-[#F7DF1E] text-[#1A1A2E] font-semibold px-4 py-1 rounded hover:bg-yellow-300 transition-colors focus-visible:outline-none flex items-center gap-1 shadow-sm"
+              className="text-xs bg-[#F7DF1E] hover:bg-yellow-300 text-[#1A1A2E] font-bold px-4 py-1.5 rounded-lg transition-transform hover:scale-105 active:scale-95 flex items-center gap-1.5 shadow-[0_0_10px_rgba(247,223,30,0.3)]"
             >
-              <Play className="w-3 h-3" /> Exécuter
+              <Play className="w-3 h-3 fill-current" /> Exécuter
             </button>
           </div>
         </div>
 
         {/* Code editor */}
-        <div className="h-[300px] w-full">
+        <div className="h-[290px] w-full">
           <Editor
             height="100%"
             language="javascript"
             theme="vs-dark"
             value={code}
             onChange={handleEditorChange}
-            keepCurrentModel={true}
             options={{
               minimap: { enabled: false },
-              fontSize: 14,
-              fontFamily: '"JetBrains Mono", monospace',
+              fontSize: 13,
+              fontFamily: '"JetBrains Mono", Menlo, monospace',
               scrollBeyondLastLine: false,
               wordWrap: 'on',
-              padding: { top: 16 }
+              padding: { top: 12, bottom: 12 }
             }}
           />
         </div>
 
         {/* Console */}
-        <div className="border-t border-slate-200 dark:border-white/10">
-          <div className="bg-slate-100 dark:bg-[#0F3460] px-4 py-2 flex items-center justify-between transition-colors">
-            <span className="text-xs text-slate-500 dark:text-gray-400 font-mono transition-colors">Console</span>
+        <div className="border-t border-white/10 bg-[#090d16] font-mono text-xs">
+          <div className="bg-[#161b22]/70 px-4 py-1.5 flex items-center justify-between text-slate-400 border-b border-white/5">
+            <span className="flex items-center gap-1.5 text-[11px] text-slate-300">
+              <Terminal className="w-3 h-3 text-[#F7DF1E]" /> Console
+            </span>
             <button 
-              onClick={effacerConsole}
-              className="text-xs text-slate-400 dark:text-gray-500 hover:text-slate-600 dark:hover:text-gray-300 focus-visible:outline-none px-1 rounded transition-colors flex flex-row gap-1 items-center"
+              onClick={() => setLogs([])}
+              className="text-[10px] text-slate-400 hover:text-white flex items-center gap-1 transition-colors"
             >
-              <Trash2 className="w-3 h-3"/> effacer
+              <Trash2 className="w-2.5 h-2.5"/> effacer
             </button>
           </div>
-          <div className="p-4 bg-slate-50 dark:bg-[#0d1117] text-slate-700 dark:text-green-400 text-sm min-h-[100px] max-h-[250px] overflow-y-auto transition-colors font-mono" aria-live="polite">
+
+          <div 
+            ref={consoleBoxRef}
+            className="p-3 text-slate-200 min-h-[90px] max-h-[180px] overflow-y-auto space-y-1"
+          >
             {logs.length === 0 ? (
-              <span className="text-slate-400 dark:text-gray-600 transition-colors">// Les résultats de console.log() apparaîtront ici...</span>
+              <span className="text-slate-500 text-xs italic">// Cliquez sur « Exécuter » pour voir la sortie console.log()...</span>
             ) : (
               logs.map((l, i) => (
-                <div key={i} className={`${l.type === 'error' ? 'text-red-400' : 'text-green-600 dark:text-green-400'} mb-1`}>
-                  <span className="text-gray-600 select-none mr-2">›</span>{l.msg}
+                <div key={i} className={`whitespace-pre-wrap leading-relaxed ${l.type === 'error' ? 'text-rose-400 font-semibold' : 'text-emerald-400'}`}>
+                  <span className="text-[#F7DF1E] select-none mr-2">›</span>{l.msg}
                 </div>
               ))
             )}
-            <div ref={consoleEndRef} />
           </div>
         </div>
       </div>
 
       {/* Snippets rapides */}
-      <div className="mt-4">
-        <p className="text-xs text-slate-500 dark:text-gray-500 mb-3 transition-colors">Exemples rapides :</p>
-        <div className="flex flex-wrap gap-2">
-          {Object.keys(snippets).map(key => (
-            <button 
-              key={key}
-              onClick={() => chargerSnippet(key)}
-              className="text-xs bg-white dark:bg-[#16213E] border border-slate-200 dark:border-white/10 hover:border-[#F7DF1E]/40 px-3 py-1.5 rounded-lg transition-colors focus-visible:outline-none text-slate-700 dark:text-white shadow-sm capitalize"
-            >
-              {key}
-            </button>
-          ))}
-        </div>
+      <div className="mt-4 flex flex-wrap items-center gap-2">
+        <span className="text-xs text-slate-500 dark:text-gray-400 mr-1 font-medium">Exemples rapides :</span>
+        {Object.keys(snippets).map(key => (
+          <button 
+            key={key}
+            onClick={() => chargerSnippet(key)}
+            className="text-xs bg-white dark:bg-[#16213E] border border-slate-200 dark:border-white/10 hover:border-yellow-400 dark:hover:border-[#F7DF1E]/50 px-3 py-1 rounded-lg text-slate-700 dark:text-gray-200 hover:text-yellow-600 dark:hover:text-[#F7DF1E] shadow-2xs transition-all capitalize font-medium"
+          >
+            {key}
+          </button>
+        ))}
       </div>
     </section>
   );
