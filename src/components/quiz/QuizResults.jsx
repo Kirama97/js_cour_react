@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 
 export default function QuizResults({ score, resultMessage, onReplay }) {
   return (
-    <div className="bg-white dark:bg-[#16213E] rounded-2xl p-8 sm:p-10 shadow-lg border border-slate-200 dark:border-white/10 text-center animate-in zoom-in-95 duration-200 max-w-lg mx-auto">
+    <div className="bg-white dark:bg-[#16213E] rounded-2xl p-6 sm:p-10 shadow-lg border border-slate-200 dark:border-white/10 text-center animate-in zoom-in-95 duration-200 max-w-lg mx-auto">
       <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-[#F7DF1E]/15 border border-[#F7DF1E]/30 flex items-center justify-center shadow-xs">
         <span className="text-3xl font-black text-slate-900 dark:text-[#F7DF1E] font-display">
           {score}

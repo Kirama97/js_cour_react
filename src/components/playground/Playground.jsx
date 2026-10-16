@@ -206,14 +206,14 @@ export default function Playground() {
 
       <div className="bg-[#0d1117] rounded-2xl border border-slate-300 dark:border-white/15 overflow-hidden shadow-lg">
         {/* Editor header */}
-        <div className="bg-[#161b22] px-4 py-2.5 flex items-center justify-between border-b border-white/10 text-slate-400">
-          <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#F7DF1E]"></span>
-            <span className="text-xs font-mono text-[#F7DF1E] font-medium">script.js</span>
+        <div className="bg-[#161b22] px-3 sm:px-4 py-2.5 flex items-center justify-between gap-2 border-b border-white/10 text-slate-400">
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="w-2.5 h-2.5 shrink-0 rounded-full bg-[#F7DF1E]"></span>
+            <span className="text-xs font-mono text-[#F7DF1E] font-medium truncate">script.js</span>
             <span className="text-[10px] text-slate-400 hidden sm:inline">(sauvegarde auto)</span>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             <button 
               onClick={handleShare}
               disabled={isSharing}
@@ -226,14 +226,17 @@ export default function Playground() {
 
             <button 
               onClick={effacerCode}
-              className="text-xs text-slate-300 hover:text-white px-2.5 py-1.5 rounded-lg border border-white/10 hover:border-white/20 hover:bg-white/5 transition-colors"
+              aria-label="Effacer le code"
+              title="Effacer le code"
+              className="text-xs text-slate-300 hover:text-white px-2.5 py-1.5 rounded-lg border border-white/10 hover:border-white/20 hover:bg-white/5 transition-colors flex items-center gap-1.5"
             >
-              Effacer
+              <Trash2 className="w-3 h-3 sm:hidden" />
+              <span className="hidden sm:inline">Effacer</span>
             </button>
 
             <button 
               onClick={executerCode}
-              className="text-xs bg-[#F7DF1E] hover:bg-yellow-300 text-[#1A1A2E] font-bold px-4 py-1.5 rounded-lg transition-transform hover:scale-105 active:scale-95 flex items-center gap-1.5 shadow-[0_0_10px_rgba(247,223,30,0.3)]"
+              className="text-xs bg-[#F7DF1E] hover:bg-yellow-300 text-[#1A1A2E] font-bold px-3 sm:px-4 py-1.5 rounded-lg transition-transform hover:scale-105 active:scale-95 flex items-center gap-1.5 shadow-[0_0_10px_rgba(247,223,30,0.3)]"
             >
               <Play className="w-3 h-3 fill-current" /> Exécuter
             </button>
@@ -241,7 +244,7 @@ export default function Playground() {
         </div>
 
         {/* Code editor */}
-        <div className="h-[290px] w-full">
+        <div className="h-[240px] sm:h-[290px] w-full">
           <Editor
             height="100%"
             language="javascript"
@@ -250,7 +253,8 @@ export default function Playground() {
             onChange={handleEditorChange}
             options={{
               minimap: { enabled: false },
-              fontSize: 13,
+              fontSize: typeof window !== 'undefined' && window.innerWidth < 640 ? 12 : 13,
+              lineNumbersMinChars: typeof window !== 'undefined' && window.innerWidth < 640 ? 2 : 4,
               fontFamily: '"JetBrains Mono", Menlo, monospace',
               scrollBeyondLastLine: false,
               wordWrap: 'on',
@@ -275,13 +279,13 @@ export default function Playground() {
 
           <div 
             ref={consoleBoxRef}
-            className="p-3 text-slate-200 min-h-[90px] max-h-[180px] overflow-y-auto space-y-1"
+            className="p-3 text-slate-200 min-h-[90px] max-h-[180px] overflow-y-auto overflow-x-hidden space-y-1"
           >
             {logs.length === 0 ? (
               <span className="text-slate-500 text-xs italic">// Cliquez sur « Exécuter » pour voir la sortie console.log()...</span>
             ) : (
               logs.map((l, i) => (
-                <div key={i} className={`whitespace-pre-wrap leading-relaxed ${l.type === 'error' ? 'text-rose-400 font-semibold' : 'text-emerald-400'}`}>
+                <div key={i} className={`whitespace-pre-wrap break-words leading-relaxed ${l.type === 'error' ? 'text-rose-400 font-semibold' : 'text-emerald-400'}`}>
                   <span className="text-[#F7DF1E] select-none mr-2">›</span>{l.msg}
                 </div>
               ))

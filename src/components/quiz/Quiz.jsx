@@ -12,6 +12,7 @@ export default function Quiz() {
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [isAnswered, setIsAnswered] = useState(false);
   const [timeLeft, setTimeLeft] = useState(30);
+  const [isCancelConfirmOpen, setIsCancelConfirmOpen] = useState(false);
 
   const startQuiz = () => {
     // Mélanger la base de données de 30 questions
@@ -30,7 +31,19 @@ export default function Quiz() {
     setSelectedAnswer(null);
     setIsAnswered(false);
     setTimeLeft(30);
+    setIsCancelConfirmOpen(false);
     setGameState('playing');
+  };
+
+  const cancelQuiz = () => {
+    setIsCancelConfirmOpen(false);
+    setQuestions([]);
+    setCurrentQIndex(0);
+    setScore(0);
+    setSelectedAnswer(null);
+    setIsAnswered(false);
+    setTimeLeft(30);
+    setGameState('intro');
   };
 
   const handleAnswerClick = useCallback((index) => {
@@ -45,7 +58,7 @@ export default function Quiz() {
   }, [isAnswered, questions, currentQIndex]);
 
   useEffect(() => {
-    if (gameState === 'playing' && !isAnswered) {
+    if (gameState === 'playing' && !isAnswered && !isCancelConfirmOpen) {
       if (timeLeft <= 0) {
         const timeout = setTimeout(() => {
           handleAnswerClick(-1);
@@ -57,7 +70,7 @@ export default function Quiz() {
       }, 1000);
       return () => clearTimeout(timerId);
     }
-  }, [timeLeft, gameState, isAnswered, handleAnswerClick]);
+  }, [timeLeft, gameState, isAnswered, isCancelConfirmOpen, handleAnswerClick]);
 
   useEffect(() => {
     if (gameState === 'results' && score > 5) {
@@ -107,6 +120,10 @@ export default function Quiz() {
           isAnswered={isAnswered}
           onAnswerClick={handleAnswerClick}
           onNextQuestion={handleNextQuestion}
+          isCancelConfirmOpen={isCancelConfirmOpen}
+          onRequestCancel={() => setIsCancelConfirmOpen(true)}
+          onDismissCancel={() => setIsCancelConfirmOpen(false)}
+          onConfirmCancel={cancelQuiz}
         />
       )}
 

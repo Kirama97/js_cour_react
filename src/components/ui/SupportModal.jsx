@@ -8,7 +8,7 @@ export default function SupportModal({ isOpen, onClose }) {
 
   return (
     <div className="fixed inset-0 z-[110] flex items-center justify-center bg-slate-900/60 dark:bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-      <div className="bg-white dark:bg-[#16213E] p-6 sm:p-7 rounded-2xl shadow-2xl max-w-sm w-full border border-slate-200 dark:border-white/10 relative animate-in zoom-in-95 duration-200">
+      <div className="bg-white dark:bg-[#16213E] p-5 sm:p-7 rounded-2xl shadow-2xl max-w-sm w-full max-h-[calc(100dvh-2rem)] overflow-y-auto border border-slate-200 dark:border-white/10 relative animate-in zoom-in-95 duration-200">
         <button 
           onClick={onClose}
           className="absolute top-4 right-4 p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:text-[#F7DF1E] dark:hover:bg-white/5 transition-colors"

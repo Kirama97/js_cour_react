@@ -39,7 +39,7 @@ export default function WelcomeModal() {
   return (
     <>
       <div className={`fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 dark:bg-black/80 backdrop-blur-sm transition-opacity duration-300 ${isVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-        <div className={`bg-white dark:bg-[#16213E] max-w-md w-full rounded-2xl border border-slate-200 dark:border-white/10 p-8 shadow-2xl transition-all duration-300 ${isVisible ? 'scale-100' : 'scale-95'}`}>
+        <div className={`bg-white dark:bg-[#16213E] max-w-md w-full max-h-[calc(100dvh-2rem)] overflow-y-auto rounded-2xl border border-slate-200 dark:border-white/10 p-6 sm:p-8 shadow-2xl transition-all duration-300 ${isVisible ? 'scale-100' : 'scale-95'}`}>
           <div className="flex items-center justify-center gap-4 mb-6">
             <div className="w-14 h-14 bg-[#F7DF1E] rounded-2xl flex items-center justify-center shadow-md">
               <span className="text-[#1A1A2E] font-black text-2xl font-mono">JS</span>

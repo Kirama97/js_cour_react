@@ -24,8 +24,8 @@ export default function ProgressBar() {
         Ma progression
       </h2>
 
-      <div className="bg-white dark:bg-[#16213E] rounded-2xl border border-slate-200 dark:border-white/10 p-6 shadow-sm transition-colors">
-        <div className="flex items-center justify-between mb-3">
+      <div className="bg-white dark:bg-[#16213E] rounded-2xl border border-slate-200 dark:border-white/10 p-4 sm:p-6 shadow-sm transition-colors">
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
           <span className="text-xs font-semibold text-slate-500 dark:text-gray-400">Modules explorés</span>
           <span id="progress-text" className="text-xs font-bold text-yellow-600 dark:text-[#F7DF1E] font-mono">{modulesVus.length} / {modules.length} ({pct}%)</span>
         </div>
@@ -33,7 +33,7 @@ export default function ProgressBar() {
           <div id="progress-bar" className="bg-[#F7DF1E] h-2.5 rounded-full transition-all duration-300 shadow-[0_0_8px_rgba(247,223,30,0.4)]" style={{ width: `${pct}%` }}></div>
         </div>
 
-        <div id="progress-modules" className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div id="progress-modules" className="grid grid-cols-1 min-[400px]:grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-3">
           {modules.map(m => {
             const isVu = modulesVus.includes(m.id);
             const Icon = IconMap[m.lucideIcon] || TerminalSquare;

@@ -112,22 +112,22 @@ function ExerciseWorkspace({
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 items-start">
       {/* Volet Gauche : Informations & Consignes de l'exercice (~45%) */}
-      <div className="lg:col-span-5 flex flex-col space-y-5">
-        <div className="bg-slate-50 dark:bg-[#0F3460]/30 rounded-2xl p-5 border border-slate-200 dark:border-white/10">
-          <div className="flex items-start justify-between gap-3 mb-3">
-            <div>
+      <div className="lg:col-span-5 min-w-0 flex flex-col space-y-4 sm:space-y-5">
+        <div className="bg-slate-50 dark:bg-[#0F3460]/30 rounded-2xl p-4 sm:p-5 border border-slate-200 dark:border-white/10">
+          <div className="flex flex-wrap items-start justify-between gap-3 mb-3">
+            <div className="min-w-0 flex-1">
               <span className="text-[11px] font-bold uppercase tracking-wider text-yellow-600 dark:text-[#F7DF1E]">
                 Exercice {selectedExoIndex + 1} sur {activeModule.exercices.length}
               </span>
-              <h4 className="text-base font-bold text-slate-900 dark:text-white font-display mt-0.5">
+              <h4 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white font-display mt-0.5 break-words">
                 {currentExercise?.titre}
               </h4>
             </div>
 
             {/* Case à cocher de validation */}
-            <label className="flex items-center gap-2 cursor-pointer bg-white dark:bg-[#1A1A2E] border border-slate-200 dark:border-[#F7DF1E]/30 px-3 py-1 rounded-xl select-none shadow-xs">
+            <label className="shrink-0 flex items-center gap-2 cursor-pointer bg-white dark:bg-[#1A1A2E] border border-slate-200 dark:border-[#F7DF1E]/30 px-3 py-1 rounded-xl select-none shadow-xs">
               <input 
                 type="checkbox" 
                 id={`ex-${activeModule.id}-${selectedExoIndex}`}
@@ -141,7 +141,7 @@ function ExerciseWorkspace({
             </label>
           </div>
 
-          <div className="text-xs sm:text-sm text-slate-800 dark:text-gray-200 leading-relaxed whitespace-pre-wrap font-sans bg-white dark:bg-[#1A1A2E] p-4 rounded-xl border border-slate-200/80 dark:border-white/10 shadow-xs">
+          <div className="text-xs sm:text-sm text-slate-800 dark:text-gray-200 leading-relaxed whitespace-pre-wrap break-words font-sans bg-white dark:bg-[#1A1A2E] p-3 sm:p-4 rounded-xl border border-slate-200/80 dark:border-white/10 shadow-xs">
             {currentExercise?.enonceFull || "Pas d'énoncé disponible pour cet exercice."}
           </div>
 
@@ -167,21 +167,21 @@ function ExerciseWorkspace({
         </div>
 
         <div className="p-4 bg-yellow-50 dark:bg-[#F7DF1E]/10 rounded-xl border border-yellow-200/80 dark:border-[#F7DF1E]/20 text-xs text-yellow-900 dark:text-yellow-200 leading-relaxed">
-          💡 <strong>Conseil :</strong> Modifiez le code dans l'éditeur à droite puis cliquez sur <strong>Exécuter</strong> pour vérifier vos résultats dans la console en direct.
+          💡 <strong>Conseil :</strong> Modifiez le code dans l'éditeur <span className="lg:hidden">ci-dessous</span><span className="hidden lg:inline">à droite</span> puis cliquez sur <strong>Exécuter</strong> pour vérifier vos résultats dans la console en direct.
         </div>
       </div>
 
       {/* Volet Droit : Éditeur Monaco + Console intégrée (~55%) */}
-      <div className="lg:col-span-7 bg-[#0d1117] rounded-2xl border border-slate-300 dark:border-white/15 overflow-hidden shadow-md flex flex-col">
+      <div className="lg:col-span-7 min-w-0 bg-[#0d1117] rounded-2xl border border-slate-300 dark:border-white/15 overflow-hidden shadow-md flex flex-col">
         {/* Barre d'outils de l'éditeur */}
-        <div className="bg-[#161b22] px-4 py-2.5 flex items-center justify-between border-b border-white/10 text-slate-400">
-          <div className="flex items-center gap-2">
+        <div className="bg-[#161b22] px-3 sm:px-4 py-2.5 flex items-center justify-between gap-2 border-b border-white/10 text-slate-400">
+          <div className="flex items-center gap-2 min-w-0">
             <span className="w-2.5 h-2.5 rounded-full bg-[#F7DF1E]"></span>
-            <span className="text-xs font-mono text-[#F7DF1E] font-medium">exercice.js</span>
+            <span className="text-xs font-mono text-[#F7DF1E] font-medium truncate">exercice.js</span>
             <span className="text-[10px] text-slate-400 hidden sm:inline">(sauvegarde auto)</span>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             <button
               onClick={handleReset}
               className="text-xs text-slate-300 hover:text-white px-2.5 py-1.5 rounded-lg border border-white/10 hover:border-white/20 hover:bg-white/5 transition-colors flex items-center gap-1"
@@ -192,7 +192,7 @@ function ExerciseWorkspace({
             </button>
             <button
               onClick={handleRun}
-              className="text-xs bg-[#F7DF1E] hover:bg-yellow-300 text-[#1A1A2E] font-bold px-4 py-1.5 rounded-lg transition-transform hover:scale-105 active:scale-95 flex items-center gap-1.5 shadow-[0_0_10px_rgba(247,223,30,0.3)]"
+              className="text-xs bg-[#F7DF1E] hover:bg-yellow-300 text-[#1A1A2E] font-bold px-3 sm:px-4 py-1.5 rounded-lg transition-transform hover:scale-105 active:scale-95 flex items-center gap-1.5 shadow-[0_0_10px_rgba(247,223,30,0.3)]"
             >
               <Play className="w-3 h-3 fill-current" />
               <span>Exécuter</span>
@@ -201,7 +201,7 @@ function ExerciseWorkspace({
         </div>
 
         {/* Monaco Editor */}
-        <div className="h-[290px] w-full">
+        <div className="h-[240px] sm:h-[290px] w-full">
           <Editor
             height="100%"
             language="javascript"
@@ -210,7 +210,8 @@ function ExerciseWorkspace({
             onChange={handleCodeChange}
             options={{
               minimap: { enabled: false },
-              fontSize: 13,
+              fontSize: typeof window !== 'undefined' && window.innerWidth < 640 ? 12 : 13,
+              lineNumbersMinChars: typeof window !== 'undefined' && window.innerWidth < 640 ? 2 : 4,
               fontFamily: '"JetBrains Mono", Menlo, monospace',
               scrollBeyondLastLine: false,
               wordWrap: 'on',
@@ -234,13 +235,13 @@ function ExerciseWorkspace({
           </div>
           <div 
             ref={consoleBoxRef}
-            className="p-3 text-slate-200 min-h-[90px] max-h-[160px] overflow-y-auto space-y-1"
+            className="p-3 text-slate-200 min-h-[90px] max-h-[160px] overflow-y-auto overflow-x-hidden space-y-1"
           >
             {logs.length === 0 ? (
               <span className="text-slate-500 text-xs italic">// Cliquez sur « Exécuter » pour voir la sortie console.log()...</span>
             ) : (
               logs.map((l, i) => (
-                <div key={i} className={`whitespace-pre-wrap leading-relaxed ${l.type === 'error' ? 'text-rose-400 font-semibold' : 'text-emerald-400'}`}>
+                <div key={i} className={`whitespace-pre-wrap break-words leading-relaxed ${l.type === 'error' ? 'text-rose-400 font-semibold' : 'text-emerald-400'}`}>
                   <span className="text-[#F7DF1E] select-none mr-2">›</span>{l.msg}
                 </div>
               ))
@@ -276,19 +277,19 @@ export default function ModuleDetail() {
       <div className="bg-white dark:bg-[#16213E] rounded-2xl border border-slate-200 dark:border-white/10 overflow-hidden shadow-lg transition-colors">
         
         {/* Header */}
-        <div className="bg-slate-50 dark:bg-[#0F3460]/40 px-6 py-4 flex items-center justify-between border-b border-slate-200 dark:border-white/10">
-          <div className="flex items-center gap-3">
-            <span id="detail-badge" className="bg-[#F7DF1E] text-[#1A1A2E] text-xs font-extrabold font-mono px-3 py-1 rounded-lg shadow-xs">
+        <div className="bg-slate-50 dark:bg-[#0F3460]/40 px-4 sm:px-6 py-3 sm:py-4 flex items-start sm:items-center justify-between gap-3 border-b border-slate-200 dark:border-white/10">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-3 min-w-0">
+            <span id="detail-badge" className="self-start sm:self-auto shrink-0 bg-[#F7DF1E] text-[#1A1A2E] text-[11px] sm:text-xs font-extrabold font-mono px-2.5 sm:px-3 py-1 rounded-lg shadow-xs whitespace-nowrap">
               Module {activeModule.id}
             </span>
-            <h3 id="detail-title" className="font-bold text-base sm:text-lg text-slate-900 dark:text-white font-display tracking-tight">
+            <h3 id="detail-title" className="font-bold text-base sm:text-lg text-slate-900 dark:text-white font-display tracking-tight break-words">
               {activeModule.titre}
             </h3>
           </div>
           <button 
             id="btn-close-detail" 
             onClick={closeModule}
-            className="text-slate-400 hover:text-slate-700 dark:hover:text-[#F7DF1E] p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 transition-colors"
+            className="shrink-0 text-slate-400 hover:text-slate-700 dark:hover:text-[#F7DF1E] p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 transition-colors"
             aria-label="Fermer les détails du module"
           >
             <X className="w-5 h-5" />
@@ -296,7 +297,7 @@ export default function ModuleDetail() {
         </div>
 
         {/* Navigation Tabs */}
-        <div className="flex border-b border-slate-200 dark:border-white/10 bg-white dark:bg-[#16213E] px-6" role="tablist">
+        <div className="flex overflow-x-auto no-scrollbar border-b border-slate-200 dark:border-white/10 bg-white dark:bg-[#16213E] px-2 sm:px-6" role="tablist">
           <button 
             className={`tab-btn ${activeTab === 'exercices' ? 'active' : ''}`}
             role="tab" 
@@ -324,8 +325,8 @@ export default function ModuleDetail() {
         {activeTab === 'exercices' && (
           <div className="p-4 sm:p-6" role="tabpanel">
             {/* Stepper horizontal de sélection d'exercices */}
-            <div className="flex items-center gap-2 mb-6 overflow-x-auto pb-1">
-              <span className="text-xs font-semibold text-slate-400 dark:text-gray-400 uppercase tracking-wider mr-1">
+            <div className="flex items-center gap-2 mb-4 sm:mb-6 overflow-x-auto no-scrollbar pb-1 -mx-4 px-4 sm:mx-0 sm:px-0">
+              <span className="shrink-0 text-xs font-semibold text-slate-400 dark:text-gray-400 uppercase tracking-wider mr-1">
                 Exercices :
               </span>
               {activeModule.exercices.map((exo, i) => {
@@ -335,7 +336,7 @@ export default function ModuleDetail() {
                   <button
                     key={i}
                     onClick={() => setSelectedExoIndex(i)}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                    className={`shrink-0 whitespace-nowrap flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                       isSelected
                         ? 'bg-[#F7DF1E] text-[#1A1A2E] font-bold shadow-sm'
                         : isDone
@@ -365,7 +366,7 @@ export default function ModuleDetail() {
 
         {/* Tab 2 : LEÇONS */}
         {activeTab === 'lecons' && (
-          <div className="p-6" role="tabpanel">
+          <div className="p-4 sm:p-6" role="tabpanel">
             <p className="text-slate-600 dark:text-gray-300 text-sm mb-6">{activeModule.description}</p>
             
             <div className="mb-6">
@@ -383,7 +384,7 @@ export default function ModuleDetail() {
             <div className="border-t border-slate-200 dark:border-white/10 pt-6">
               <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4">Contenu du cours</h4>
               <div 
-                className="lecon-content text-slate-700 dark:text-slate-300 text-sm" 
+                className="lecon-content min-w-0 text-slate-700 dark:text-slate-300 text-sm" 
                 dangerouslySetInnerHTML={{ __html: activeModule.contenuLecon || "<p class='italic text-slate-400'>Le contenu n'est pas encore disponible.</p>" }} 
               />
             </div>
@@ -392,8 +393,8 @@ export default function ModuleDetail() {
 
         {/* Tab 3 : CONCEPTS */}
         {activeTab === 'concepts' && (
-          <div className="p-6" role="tabpanel">
-            <div className="flex flex-wrap gap-2.5">
+          <div className="p-4 sm:p-6" role="tabpanel">
+            <div className="flex flex-wrap gap-2 sm:gap-2.5">
               {activeModule.concepts.map((c, i) => (
                 <span key={i} className="text-xs font-mono bg-[#F7DF1E]/15 text-yellow-800 dark:text-[#F7DF1E] border border-[#F7DF1E]/30 px-3 py-1.5 rounded-xl font-medium">
                   {c}

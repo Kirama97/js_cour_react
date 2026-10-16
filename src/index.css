@@ -29,7 +29,7 @@
 
 @layer components {
   .tab-btn {
-    @apply px-5 py-3 text-sm font-medium transition-colors focus-visible:outline-none border-b-2 border-transparent text-slate-500 hover:text-slate-900 dark:text-gray-400 dark:hover:text-[#F7DF1E];
+    @apply shrink-0 whitespace-nowrap px-3 sm:px-5 py-3 text-xs sm:text-sm font-medium transition-colors focus-visible:outline-none border-b-2 border-transparent text-slate-500 hover:text-slate-900 dark:text-gray-400 dark:hover:text-[#F7DF1E];
   }
   .tab-btn.active {
     @apply border-[#F7DF1E] text-slate-900 dark:text-white font-semibold;
@@ -52,6 +52,46 @@
   font-family: var(--font-mono);
   font-size: 0.8125rem;
   line-height: 1.65;
+}
+
+/* Responsive : le contenu des leçons ne doit jamais déborder */
+.lecon-content {
+  overflow-wrap: anywhere;
+}
+.lecon-content pre,
+.lecon-content pre code {
+  overflow-wrap: normal;
+  max-width: 100%;
+}
+.lecon-content img,
+.lecon-content video,
+.lecon-content iframe {
+  max-width: 100%;
+  height: auto;
+}
+.lecon-content table {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+@media (max-width: 639px) {
+  .lecon-content pre {
+    padding: 0.875rem;
+    border-radius: 0.625rem;
+  }
+  .lecon-content code {
+    font-size: 0.75rem;
+  }
+}
+
+/* Masque la scrollbar tout en gardant le défilement (onglets, stepper) */
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
 }
 
 /* Scrollbars fines et soignées */
