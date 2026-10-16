@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { quizData } from '../../data/quiz';
 import QuizIntro from './QuizIntro';
 import QuizPlaying from './QuizPlaying';
@@ -12,6 +12,7 @@ export default function Quiz() {
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [isAnswered, setIsAnswered] = useState(false);
   const [timeLeft, setTimeLeft] = useState(30);
+  const [isCancelConfirmOpen, setIsCancelConfirmOpen] = useState(false);
 
   const startQuiz = () => {
     // Mélanger la base de données de 30 questions
@@ -30,38 +31,59 @@ export default function Quiz() {
     setSelectedAnswer(null);
     setIsAnswered(false);
     setTimeLeft(30);
+    setIsCancelConfirmOpen(false);
     setGameState('playing');
   };
 
-  useEffect(() => {
-    if (gameState === 'playing' && !isAnswered) {
-      if (timeLeft > 0) {
-        const timerId = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
-        return () => clearTimeout(timerId);
-      } else {
-        // Temps écoulé
-        handleAnswerClick(-1);
-      }
-    }
-  }, [timeLeft, gameState, isAnswered]);
+  const cancelQuiz = () => {
+    setIsCancelConfirmOpen(false);
+    setQuestions([]);
+    setCurrentQIndex(0);
+    setScore(0);
+    setSelectedAnswer(null);
+    setIsAnswered(false);
+    setTimeLeft(30);
+    setGameState('intro');
+  };
 
-  useEffect(() => {
-    if (gameState === 'results' && score > 5) {
-      const audio = new Audio('/applaudissement.mp3');
-      audio.play().catch(err => console.log("Audio playback failed:", err));
-    }
-  }, [gameState, score]);
-
-  const handleAnswerClick = (index) => {
+  const handleAnswerClick = useCallback((index) => {
     if (isAnswered) return;
     
     setSelectedAnswer(index);
     setIsAnswered(true);
 
-    if (index !== -1 && questions[currentQIndex].options[index].isCorrect) {
+    if (index !== -1 && questions[currentQIndex]?.options[index]?.isCorrect) {
       setScore(s => s + 1);
     }
-  };
+  }, [isAnswered, questions, currentQIndex]);
+
+  useEffect(() => {
+    if (gameState === 'playing' && !isAnswered && !isCancelConfirmOpen) {
+      if (timeLeft <= 0) {
+        const timeout = setTimeout(() => {
+          handleAnswerClick(-1);
+        }, 0);
+        return () => clearTimeout(timeout);
+      }
+      const timerId = setTimeout(() => {
+        setTimeLeft(t => Math.max(0, t - 1));
+      }, 1000);
+      return () => clearTimeout(timerId);
+    }
+  }, [timeLeft, gameState, isAnswered, isCancelConfirmOpen, handleAnswerClick]);
+
+  useEffect(() => {
+    if (gameState === 'results' && score > 5) {
+      try {
+        const audio = new Audio('/applaudissement.mp3');
+        audio.play().catch(err => {
+          void err;
+        });
+      } catch (err) {
+        void err;
+      }
+    }
+  }, [gameState, score]);
 
   const handleNextQuestion = () => {
     const nextIndex = currentQIndex + 1;
@@ -83,7 +105,7 @@ export default function Quiz() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto w-full">
+    <div className="max-w-4xl mx-auto w-full py-4">
       {gameState === 'intro' && (
         <QuizIntro onStart={startQuiz} />
       )}
@@ -98,6 +120,10 @@ export default function Quiz() {
           isAnswered={isAnswered}
           onAnswerClick={handleAnswerClick}
           onNextQuestion={handleNextQuestion}
+          isCancelConfirmOpen={isCancelConfirmOpen}
+          onRequestCancel={() => setIsCancelConfirmOpen(true)}
+          onDismissCancel={() => setIsCancelConfirmOpen(false)}
+          onConfirmCancel={cancelQuiz}
         />
       )}
 

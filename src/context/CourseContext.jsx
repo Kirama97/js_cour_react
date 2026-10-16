@@ -1,27 +1,29 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState } from 'react';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import { modules } from '../data/modules';
 
-const CourseContext = createContext();
+const CourseContext = createContext(null);
+
+function loadInitialExercisesProgress() {
+  const loadedProgress = {};
+  modules.forEach(m => {
+    m.exercices.forEach((_, i) => {
+      const key = `ex-${m.id}-${i}`;
+      try {
+        loadedProgress[key] = localStorage.getItem(key) === 'true';
+      } catch (err) {
+        void err;
+        loadedProgress[key] = false;
+      }
+    });
+  });
+  return loadedProgress;
+}
 
 export function CourseProvider({ children }) {
   const [activeModuleId, setActiveModuleId] = useState(null);
   const [modulesVus, setModulesVus] = useLocalStorage('modules-vus', []);
-  
-  // Storage custom fallback for exercises (to avoid using useLocalStorage per exercise)
-  const [exercisesProgress, setExercisesProgress] = useState({});
-
-  useEffect(() => {
-    // Load all exercises progress from local storage once
-    const loadedProgress = {};
-    modules.forEach(m => {
-      m.exercices.forEach((_, i) => {
-        const key = `ex-${m.id}-${i}`;
-        loadedProgress[key] = localStorage.getItem(key) === 'true';
-      });
-    });
-    setExercisesProgress(loadedProgress);
-  }, []);
+  const [exercisesProgress, setExercisesProgress] = useState(loadInitialExercisesProgress);
 
   const marquerModuleVu = (id) => {
     if (!modulesVus.includes(id)) {
@@ -31,7 +33,11 @@ export function CourseProvider({ children }) {
 
   const toggleExerciseProgress = (moduleId, exerciseIndex, isDone) => {
     const key = `ex-${moduleId}-${exerciseIndex}`;
-    localStorage.setItem(key, isDone);
+    try {
+      localStorage.setItem(key, String(isDone));
+    } catch (err) {
+      void err;
+    }
     setExercisesProgress(prev => ({ ...prev, [key]: isDone }));
   };
 
@@ -44,7 +50,7 @@ export function CourseProvider({ children }) {
     setActiveModuleId(null);
   };
 
-  const activeModule = modules.find(m => m.id === activeModuleId);
+  const activeModule = modules.find(m => m.id === activeModuleId) || null;
 
   return (
     <CourseContext.Provider value={{
@@ -63,5 +69,9 @@ export function CourseProvider({ children }) {
 }
 
 export function useCourse() {
-  return useContext(CourseContext);
+  const context = useContext(CourseContext);
+  if (!context) {
+    throw new Error('useCourse must be used within CourseProvider');
+  }
+  return context;
 }
